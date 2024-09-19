@@ -1,8 +1,8 @@
 #define POT_PIN A7
 
 void setup() {
-	// Set PB1 (OC1A) to output
-	DDRB = DDRB | (1 << DDB1);
+	// Set PB5 (OC1A) to output
+	DDRB = DDRB | (1 << DDB5);
 
 	// Clear Timer 1 config registers
 	TCCR1B = 0x00;
