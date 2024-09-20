@@ -1,46 +1,87 @@
-#define POT_PIN A7
+// Pins used for an Arduino Mega (ATmega2560)
+// RE-EVALUATE THESE WHEN PORTED TO ANOTHER MCU
+#define POT_PIN A7 // Can be any analog pin
+#define PUL_PIN 11 // Internally connected to Timer1
+#define DIR_PIN 7 // Can be any pin
+#define ENA_PIN 6 // Can be any pin
+
+// Width of dead zone to either side of center
+// Depends on input mapping, number is pretty abstract
+#define DEAD_WIDTH 100
+
+// Parameters for timer configuration
+// MUST DO A SANITY CHECK IF YOU CHANGE FREQS (run the numbers)
+#define PSCL 1024 // Prescaler setting (SET MANUALLY IN setup())
+#define PCLK F_CPU / PSCL // Prescaled clock
+#define FMAX 50 // Maximum desired step frequency
+#define FMIN 5 // Minimum desired step frequency
+#define TOP_FMAX PCLK / FMAX // Value of timer's TOP to achieve FMAX
+#define TOP_FMIN PCLK / FMIN // Value of timer's TOP to achieve FMIN
 
 void setup() {
-	// Set PB5 (OC1A) to output
-	DDRB = DDRB | (1 << DDB5);
 
-	// Clear Timer 1 config registers
-	TCCR1B = 0x00;
-	TCCR1A = 0x00;
-	// Set bits for 1/256 prescaler
-	TCCR1B = TCCR1B | (1 << CS12);
-	// Set bits for CTC mode with OCR1A TOP
-	TCCR1B = TCCR1B | (1 << WGM12);
-	TCCR1A = TCCR1A | (1 << COM1A0);
+    // Some gross low-level stuff to make Timer1 do PFM
+    // Clear Timer 1 config registers
+    TCCR1B = 0x00;
+    TCCR1A = 0x00;
+    // Set bits for 1/1024 prescaler
+    TCCR1B |= (1 << CS10);
+    TCCR1B |= (1 << CS12);
+    // Set bits for CTC mode with OCR1A TOP
+    TCCR1B |= (1 << WGM12);
+    TCCR1A |= (1 << COM1A0);
+    // End of low-level configuration
 
-	// Set output compare value
-	OCR1A = 0xFFFF;
-
-	pinMode(POT_PIN, INPUT);
+    pinMode(POT_PIN, INPUT);
+    pinMode(PUL_PIN, OUTPUT);
+    pinMode(DIR_PIN, OUTPUT);
+    pinMode(ENA_PIN, OUTPUT);
 }
 
-uint16_t input = 0;
+int input = 0;
+int top = 0;
 void loop() {
 
-	// Being strict with types because of later bitwise ops
-	input = (uint16_t) analogRead(POT_PIN);
+    // Read an analog signal from a joystick or smth
+    input = analogRead(POT_PIN);
 
-	// Set a lower bound for sanity
-	if (input <= 0) {
-		input = 1;
-	}
+    // Map input to a range that meets max and min step frequency needs
+    // Here step frequency is prescaled clock divided by input
+    // For maximum frequency fmax, top needs to be (pclk)/fmax
+    // For minimum frequency fmin, top needs to be (pclk)/fmin
+    // Mapping range should be +- (top(fmin) - top(fmax))
+    // Oh also add in some dead zone buffer
+    input = map(input, 0, 1023, -(TOP_FMIN - TOP_FMAX) - DEAD_WIDTH, (TOP_FMIN - TOP_FMAX) + DEAD_WIDTH);
+    // Offset the input so 0 happens at joystick centered (Vin = Vdd/2)
+    top = TOP_FMIN + 2 * DEAD_WIDTH - abs(input);
 
-	// Set a new TOP to change Timer1 period
-	// Shift the 10-bit analog value to fill 16 bits
-	OCR1A = (input << 6);
+    // More gross low-level stuff, but pretty self-explanatory
+    // Set a new TOP to change Timer1 period
+    OCR1A = top;
 
-	// Try to avoid the timer skipping past the new TOP
-	if (TCNT1 > OCR1A)
-	{
-		TCNT1 = 0x0000;
-	}
+    // Avoid the timer skipping past the new TOP
+    if (TCNT1 > OCR1A)
+    {
+        TCNT1 = OCR1A - 1;
+    }
+    // End of more low-level stuff
 
-	// Delay for stability reasons (should be a better way)
-	delay(10);
+    // Set which direction the motor should step in
+    if (input > DEAD_WIDTH) {
+        digitalWrite(DIR_PIN, HIGH);
+    }
+    else {
+        digitalWrite(DIR_PIN, LOW);
+    }
+
+    // Set ENA if input exceeds the dead zone on either side
+    if (abs(input) > DEAD_WIDTH) {
+        digitalWrite(ENA_PIN, HIGH);
+    }
+    else {
+        digitalWrite(ENA_PIN, LOW);
+    }
+
+    // Look at that, no delay() in sight!
 }
 
