@@ -25,8 +25,9 @@
 #define PCLK F_CPU / PSCL // Prescaled clock
 #define FMAX 50 // Maximum desired step frequency
 #define FMIN 5 // Minimum desired step frequency
-#define TOP_FMAX PCLK / FMAX // Value of timer's TOP to achieve FMAX
-#define TOP_FMIN PCLK / FMIN // Value of timer's TOP to achieve FMIN
+// Frequencies multiplied by 2 because one toggle is half of a pulse cycle
+#define TOP_FMAX PCLK / (2 * FMAX) // Value of timer's TOP to achieve FMAX
+#define TOP_FMIN PCLK / (2 * FMIN) // Value of timer's TOP to achieve FMIN
 
 void setup() {
 
