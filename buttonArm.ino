@@ -2,7 +2,8 @@
 Full arm control by buttons
 Currently targeting a positive logic setup
 i.e. DIR-, PUL-, and ENA- all grounded
-DIR+, PUL+, and ENA+ are active high
+DIR+, PUL+ are active high(?)
+ENA+ is active low
 */
 
 // Outputs to Motor Controllers
@@ -73,20 +74,20 @@ void loop() {
     * Waist motor shaft points "up", so CW --> left, CCW --> right
     */
     if (digitalRead(WAIST_LEFT)) {
-        digitalWrite(WAIST_ENABLE, HIGH);
+        digitalWrite(WAIST_ENABLE, LOW);
         digitalWrite(WAIST_DIRECTION, HIGH);  
         digitalWrite(WAIST_PULSE, HIGH);
         delay(STEP_DELAY);
         digitalWrite(WAIST_PULSE, LOW);
-        digitalWrite(WAIST_ENABLE, LOW);
+        digitalWrite(WAIST_ENABLE, HIGH);
     }
     else if (digitalRead(WAIST_RIGHT)) {
-        digitalWrite(WAIST_ENABLE, HIGH);
+        digitalWrite(WAIST_ENABLE, LOW);
         digitalWrite(WAIST_DIRECTION, LOW);
         digitalWrite(WAIST_PULSE, HIGH);
         delay(STEP_DELAY);
         digitalWrite(WAIST_PULSE, LOW);
-        digitalWrite(WAIST_ENABLE, LOW);
+        digitalWrite(WAIST_ENABLE, HIGH);
     }
 
     /*
@@ -95,20 +96,20 @@ void loop() {
     * Shoulder motor shaft faces "right", so CW --> up, CCW --> down
     */
     if (digitalRead(SHOULDER_UP)) {
-        digitalWrite(SHOULDER_ENABLE, HIGH);
+        digitalWrite(SHOULDER_ENABLE, LOW);
         digitalWrite(SHOULDER_DIRECTION, HIGH);
         digitalWrite(SHOULDER_PULSE, HIGH);
         delay(STEP_DELAY);
         digitalWrite(SHOULDER_PULSE, LOW);
-        digitalWrite(SHOULDER_ENABLE, LOW);
+        digitalWrite(SHOULDER_ENABLE, HIGH);
     }
     else if (digitalRead(SHOULDER_DOWN)) {
-        digitalWrite(SHOULDER_ENABLE, HIGH);
+        digitalWrite(SHOULDER_ENABLE, LOW);
         digitalWrite(SHOULDER_DIRECTION, LOW);
         digitalWrite(SHOULDER_PULSE, HIGH);
         delay(STEP_DELAY);
         digitalWrite(SHOULDER_PULSE, LOW);
-        digitalWrite(SHOULDER_ENABLE, LOW);
+        digitalWrite(SHOULDER_ENABLE, HIGH);
     }
 
     /*
@@ -117,20 +118,20 @@ void loop() {
     * Elbow motor shaft faces "right", so CW --> up, CCW --> down
     */
     if (digitalRead(ELBOW_DOWN)) {
-        digitalWrite(ELBOW_ENABLE, HIGH);
+        digitalWrite(ELBOW_ENABLE, LOW);
         digitalWrite(ELBOW_DIRECTION, HIGH);
         digitalWrite(ELBOW_PULSE, HIGH);
         delay(STEP_DELAY);
         digitalWrite(ELBOW_PULSE, LOW);
-        digitalWrite(ELBOW_ENABLE, LOW);
+        digitalWrite(ELBOW_ENABLE, HIGH);
     }
     else if (digitalRead(ELBOW_UP)) {
-        digitalWrite(ELBOW_ENABLE, HIGH);
+        digitalWrite(ELBOW_ENABLE, LOW);
         digitalWrite(ELBOW_DIRECTION, LOW);
         digitalWrite(ELBOW_PULSE, HIGH);
         delay(STEP_DELAY);
         digitalWrite(ELBOW_PULSE, LOW);
-        digitalWrite(ELBOW_ENABLE, LOW);
+        digitalWrite(ELBOW_ENABLE, HIGH);
     }
 
 }
