@@ -23,8 +23,8 @@
 // MUST DO A SANITY CHECK IF YOU CHANGE FREQS (run the numbers)
 #define PSCL 1024 // Prescaler setting (SET MANUALLY IN setup())
 #define PCLK F_CPU / PSCL // Prescaled clock
-#define FMAX 50 // Maximum desired step frequency
-#define FMIN 5 // Minimum desired step frequency
+#define FMAX 1000 // Maximum desired step frequency
+#define FMIN 20 // Minimum desired step frequency
 // Frequencies multiplied by 2 because one toggle is half of a pulse cycle
 #define TOP_FMAX PCLK / (2 * FMAX) // Value of timer's TOP to achieve FMAX
 #define TOP_FMIN PCLK / (2 * FMIN) // Value of timer's TOP to achieve FMIN
@@ -155,23 +155,24 @@ void loop() {
     }
 
     // Set ENA if input exceeds the dead zone on either side
+    // Note that our motor driver (DM556) uses negative enable logic
     if (abs(waist_input) > DEAD_WIDTH) {
-        digitalWrite(WAIST_ENA, HIGH);
-    }
-    else {
         digitalWrite(WAIST_ENA, LOW);
     }
-    if (abs(shoulder_input) > DEAD_WIDTH) {
-        digitalWrite(SHOULDER_ENA, HIGH);
-    }
     else {
+        digitalWrite(WAIST_ENA, HIGH);
+    }
+    if (abs(shoulder_input) > DEAD_WIDTH) {
         digitalWrite(SHOULDER_ENA, LOW);
     }
+    else {
+        digitalWrite(SHOULDER_ENA, HIGH);
+    }
     if (abs(elbow_input) > DEAD_WIDTH) {
-        digitalWrite(ELBOW_ENA, HIGH);
+        digitalWrite(ELBOW_ENA, LOW);
     }
     else {
-        digitalWrite(ELBOW_ENA, LOW);
+        digitalWrite(ELBOW_ENA, HIGH);
     }
 }
 
